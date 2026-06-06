@@ -3,17 +3,17 @@ import subprocess
 import os
 import html
 
-API_TOKEN = '8652515807:AAG8ZOhyb7Q0dWX2wleDSbkx0mZHKOoqQsE'
-ADMIN_USER_SYSTEM = 'fade'
-ADMIN_ID = 2129613326
-SUDO_PASSWD = 'kali'
+API_TOKEN = ''
+ADMIN_ID = 
+ADMIN_USER_SYSTEM = ''
+ADMIN_USER_SUDO_PASSWD = ''
 
 bot = telebot.TeleBot(API_TOKEN)
 
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
     if message.from_user.id == ADMIN_ID:
-        bot.reply_to(message, "Hello, boss! System has been started. Waiting for commands.")
+        bot.reply_to(message, "🤖 Hello, boss! System has been started. Waiting for commands.")
     else:
         bot.reply_to(message, "Access denied.")
 
@@ -61,14 +61,14 @@ def execute_command(message):
                 if os.path.exists(photo_path):
                     env_info = desktop_env.upper() if desktop_env else "CUSTOM/TILING"
                     with open(photo_path, "rb") as photo:
-                        bot.send_photo(ADMIN_ID, photo, caption=f"Screenshot completed.\n🖥️ DE: {env_info}\n⚙️ Сервер: {session_type.upper()}")
+                        bot.send_photo(ADMIN_ID, photo, caption=f"Screenshot completed.\n🖥️ DE: {env_info}\n⚙️ GraphServer: {session_type.upper()}")
                     os.remove(photo_path)
                 else:
                     raise Exception("Not allowed on your system(DE,Session Type)")
                 return
 
             except Exception as e:
-                bot.send_message(ADMIN_ID, f"❌ Помилка скріншоту: {str(e)}")
+                bot.send_message(ADMIN_ID, f"Error: {str(e)}")
                 return
             
 
@@ -85,7 +85,7 @@ def execute_command(message):
 
         if command.startswith('sudo'):
             clean_command = command[5:]
-            full_command = f"echo '{SUDO_PASSWD}' | sudo -S {clean_command}"
+            full_command = f"echo '{ADMIN_USER_SUDO_PASSWD}' | sudo -S {clean_command}"
         else:
             full_command = command
         
