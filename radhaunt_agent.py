@@ -37,7 +37,7 @@ def send_welcome(message):
 @bot.message_handler(commands=['help'])
 def send_help(message):
     help_text = (
-        "<b>RadHaunt Agent v1.1</b>\n\n"
+        "<b>RadHaunt Agent v1.1.2</b>\n\n"
         "Type and send any shell command to your linux system (ex. whoami, ls)\n\n"
         "<b>Important!!!</b> When running graphical programs, use '&' after the command (ex. firefox &)\n\n"
         "<b>Agent also has his own commands:</b>\n\n"
@@ -99,7 +99,7 @@ def execute_command(message):
                 hostname = platform.node()          
                 internal_ip = subprocess.check_output("hostname -I | awk '{print $1}'", shell=True, text=True).strip() or "Unknown"
                 ram_info = subprocess.check_output("free -h | grep Mem | awk '{print $3 \" / \" $2}'", shell=True, text=True).strip() or "Unknown"
-                cpu_info = subprocess.check_output("cat /proc/proc/cpuinfo | grep 'model name' | head -n 1 | awk -F: '{print $2}'", shell=True, text=True).strip() or "Unknown"
+                cpu_info = subprocess.check_output("cat /proc/cpuinfo | grep 'model name' | head -n 1 | awk -F: '{print $2}'", shell=True, text=True).strip() or "Unknown"
                 gpu_info = subprocess.check_output('lspci | grep -E "VGA|3D" | awk -F: \'{print $3}\'', shell=True, text=True).strip() or "Unknown"
 
                 info_message = (

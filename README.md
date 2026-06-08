@@ -17,6 +17,21 @@ What can you use **RadHaunt_Agent** for?
 
 ---
 
+## 🌐 Supported Environments & Distros
+
+The agent automatically adapts to your system configuration and has been tested across major Linux distributions:
+
+| Distribution | Display Server | Tested Desktop Environments / WMs |
+| :--- | :--- | :--- |
+| **Linux Mint / Ubuntu / Debian** | X11 / Wayland | Cinnamon, GNOME, XFCE |
+| **Kali Linux** | X11 | XFCE |
+| **Arch Linux / Manjaro** | X11 / Wayland | Hyprland, Sway, KDE Plasma |
+| **Fedora** | Wayland | GNOME, KDE |
+
+*Note: For Wayland-based environments, ensuring `ydotool` is installed and its background daemon (`ydotoold`) is running may be required for simulated keystrokes (`type` command).*
+
+---
+
 ## Installation Guide
 
 ### 1. Clone the Repository
@@ -28,7 +43,8 @@ cd radhaunt_agent
 
 Create an isolated environment and install the required dependencies:
 ```bash
-sudo apt update && sudo apt install xdotool ydotool -y
+
+sudo apt update && sudo apt install xdotool ydotool -y (For pacman: sudo pacman -S xdotool ydotool)
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
@@ -56,7 +72,8 @@ Paste the following configuration (replace {YOUR_USER} and {PATH_TO_PROJECT} wit
 
 [Unit]
 Description=RadHaunt Telegram Remote Control Agent
-After=network.target
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple
@@ -100,4 +117,4 @@ X-GNOME-Autostart-enabled=true
 Open Telegram and go to your bot's chat.
 Send the /start command.
 If everything is configured correctly, the bot will respond with:
-    🤖 Hello, boss! System has been started. Waiting for commands.
+    "🤖 Hello! Agent has been started. Waiting for shell commands, or enter '/help'."
