@@ -3,14 +3,29 @@ import subprocess
 import os
 import html
 import platform
+import time
+import shutil
 
+# --- API, SETTINGS AND SECURITY ---
 API_TOKEN = ''
 ADMIN_ID = 
 ADMIN_USER_SYSTEM = ''
 ADMIN_USER_SUDO_PASSWD = ''
 
+CURRENT_TIMEOUT = 15
 bot = telebot.TeleBot(API_TOKEN)
 
+# --- SHELL CHOOSING ---
+if shutil.which("bash"):
+    chosen_shell = "/bin/bash"
+elif shutil.which("sh"):
+    chosen_shell = "/bin/sh"
+elif shutil.which("zsh"):
+    chosen_shell = "/bin/zsh"
+else:
+    chosen_shell = None
+
+# --- SCREENSHOT ---
 def take_fast_screenshot(session_type, desktop_env, ps_output, photo_path):
     if session_type == "wayland":
         if "gnome" in desktop_env:
@@ -27,6 +42,7 @@ def take_fast_screenshot(session_type, desktop_env, ps_output, photo_path):
         except Exception:
             subprocess.run(f"scrot {photo_path} || xfce4-screenshooter -s {photo_path}", shell=True, timeout=3)
 
+# --- START ---
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     if message.from_user.id == ADMIN_ID:
@@ -34,28 +50,35 @@ def send_welcome(message):
     else:
         bot.reply_to(message, "Access denied.")
 
+# -- HELP ---
 @bot.message_handler(commands=['help'])
 def send_help(message):
     help_text = (
-        "<b>RadHaunt Agent v1.1.2</b>\n\n"
+        "<b>RadHaunt Agent v1.2</b>\n\n"
         "Type and send any shell command to your linux system (ex. whoami, ls)\n\n"
         "<b>Important!!!</b> When running graphical programs, use '&' after the command (ex. firefox &)\n\n"
         "<b>Agent also has his own commands:</b>\n\n"
         "- Screenshot (Making screenshot and sending it in this chat)\n\n"
         "- Show info (Outputs basics info about system)\n\n"
         "- Keyboard (Provides access to the main keys with buttons)\n\n"
-        "- Type {text} (Enters specific text like a human)\n"
+        "- Type {text} (Enters specific text like a human)\n\n"
+        "- Url {link} (Opens any link dynamically in your system browser. IMPORTANT: The browser should not be open before this or it will crash. )\n\n"
+        "- Timeout {value} (Setting max timeout(in seconds) limit for shell commands. Default 15.)"
     )
     bot.reply_to(message, help_text, parse_mode='HTML')
-    
+
+# --- MAIN ---    
 @bot.message_handler(func=lambda message: True)
 def execute_command(message):
     if message.from_user.id != ADMIN_ID:
         return
     
+    global CURRENT_TIMEOUT
     command = message.text.strip()
 
     try:
+
+        # --- SESSION CHECKER ---
         try:
             session_type = subprocess.check_output("echo $XDG_SESSION_TYPE", shell=True, text=True).strip().lower()
             ps_output = subprocess.check_output("ps -e", shell=True, text=True).lower()
@@ -71,6 +94,22 @@ def execute_command(message):
             session_type = "unknown"
             ps_output = ""
 
+        # --- COMMAND: TIMEOUT ---
+        if command.lower().startswith('timeout '):
+            try:
+                new_timeout = int(command[8:].strip())
+
+                if new_timeout <=0:
+                    bot.send_message(ADMIN_ID, "⚠️ <b>Timeout must be a positive number!</b>", parse_mode='HTML')
+                    return
+                
+                CURRENT_TIMEOUT = new_timeout
+                bot.send_message(ADMIN_ID, f"⏱️ <b>Timeout updated!</b> New limit: <code>{CURRENT_TIMEOUT}</code> seconds.", parse_mode='HTML')
+                return
+            except ValueError:
+                bot.send_message(ADMIN_ID, "⚠️ <b>Please enter a valid number!</b> (ex. <code>timeout 60</code>)", parse_mode='HTML')
+                return
+            
         # --- COMMAND: SCREENSHOT ---
         if command.lower() == "screenshot":
             photo_path = "/tmp/screenshot.png"
@@ -180,6 +219,29 @@ def execute_command(message):
             except Exception as e:
                 bot.send_message(ADMIN_ID, f"Error: {str(e)}")
                 return
+            
+        # --- COMMAND: URL ---
+        if command.lower().startswith('url '):
+            target_url = command[4:].strip()
+            if not target_url:
+                bot.send_message(ADMIN_ID, "⚠️ <b>URL is empty!</b>", parse_mode='HTML')
+                return
+                
+            if not target_url.startswith(('http://', 'https://')):
+                target_url = 'https://' + target_url            
+            try:
+                bot.send_message(ADMIN_ID, f"🌐 Opening in browser: <code>{html.escape(target_url)}</code>...", parse_mode='HTML')
+                if session_type == "wayland":
+                    subprocess.run(f"xdg-open '{target_url}' &", shell=True)
+                else:
+                    os.environ["DISPLAY"] = ":0"
+                    os.environ["XAUTHORITY"] = f"/home/{ADMIN_USER_SYSTEM}/.Xauthority"
+                    subprocess.run(f"xdg-open '{target_url}' &", shell=True)
+                bot.send_message(ADMIN_ID, "🚀 <b>Browser launched successfully!</b>", parse_mode='HTML')
+                return
+            except Exception as e:
+                bot.send_message(ADMIN_ID, f"Error: {str(e)}")
+                return
 
         # --- CD COMMAND ---
         if command.startswith('cd '):
@@ -200,7 +262,7 @@ def execute_command(message):
         else:
             full_command = command
             
-        result = subprocess.run(full_command, shell=True, capture_output=True, text=True, timeout=15, cwd=os.getcwd())
+        result = subprocess.run(full_command, shell=True, capture_output=True, text=True, timeout=CURRENT_TIMEOUT, cwd=os.getcwd(), executable=chosen_shell)
         
         output = html.escape(result.stdout) if result.stdout else ""
         error = html.escape(result.stderr) if result.stderr else ""
@@ -222,7 +284,7 @@ def execute_command(message):
         bot.send_message(ADMIN_ID, response, parse_mode='HTML')
 
     except subprocess.TimeoutExpired:
-        bot.send_message(ADMIN_ID, "The command timed out (timeout 15 sec).")
+        bot.send_message(ADMIN_ID, f"⚠️ <b>The command timed out (current limit: {CURRENT_TIMEOUT} sec).</b>", parse_mode='HTML')
     except Exception as e:
         bot.send_message(ADMIN_ID, f"System error: {str(e)}")
 
@@ -250,7 +312,8 @@ def handle_keyboard_click(call):
             os.environ["DISPLAY"] = ":0"
             os.environ["XAUTHORITY"] = f"/home/{ADMIN_USER_SYSTEM}/.Xauthority"
             subprocess.run(f"xdotool key {x11_key}", shell=True, timeout=2)
-            
+
+        time.sleep(0.3)    
         bot.answer_callback_query(call.id, text=f"Pressed: {x11_key}")
         
         photo_path = "/tmp/keyboard_refresh.png"

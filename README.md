@@ -34,17 +34,28 @@ The agent automatically adapts to your system configuration and has been tested 
 
 ## Installation Guide
 
-### 1. Clone the Repository
+### 1. Clone the Repository and Install Dependencies
 ```bash
 git clone https://github.com/venya11/radhaunt_agent.git
 cd radhaunt_agent
+```
+Install the required display utilities based on your package manager:
+    Ubuntu / Debian / Linux Mint:
+```bash
+    sudo apt update && sudo apt install xdotool ydotool -y
+```
+    Arch Linux / Manjaro:
+```bash
+    sudo pacman -S --noconfirm xdotool ydotool
+```
+    Fedora:
+```bash
+    sudo dnf install xdotool ydotool -y
 ```
 ### 2. Set Up a Virtual Environment and install requirements
 
 Create an isolated environment and install the required dependencies:
 ```bash
-
-sudo apt update && sudo apt install xdotool ydotool -y (For pacman: sudo pacman -S xdotool ydotool)
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
@@ -69,7 +80,6 @@ sudo nano /etc/systemd/system/radhaunt_agent.service
 ```
 Paste the following configuration (replace {YOUR_USER} and {PATH_TO_PROJECT} with your actual data):
 ```bash
-
 [Unit]
 Description=RadHaunt Telegram Remote Control Agent
 After=network-online.target
