@@ -40,15 +40,15 @@ git clone https://github.com/venya11/radhaunt_agent.git
 cd radhaunt_agent
 ```
 Install the required display utilities based on your package manager:
-    Ubuntu / Debian / Linux Mint:
+Ubuntu / Debian / Linux Mint:
 ```bash
     sudo apt update && sudo apt install xdotool ydotool -y
 ```
-    Arch Linux / Manjaro:
+Arch Linux / Manjaro:
 ```bash
     sudo pacman -S --noconfirm xdotool ydotool
 ```
-    Fedora:
+Fedora:
 ```bash
     sudo dnf install xdotool ydotool -y
 ```
